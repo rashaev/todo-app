@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-todo}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - todo-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      TODO_DB_HOST: ${TODO_DB_HOST:-postgres}
+      TODO_DB_PORT: 5432
+      TODO_DB_USERNAME: ${TODO_DB_USERNAME:-postgres}
+      TODO_DB_PASSWORD: ${TODO_DB_PASSWORD:-postgres}
+      TODO_DB_DBNAME: ${TODO_DB_DBNAME:-todo}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - todo-net
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  todo-net:
+    driver: bridge
