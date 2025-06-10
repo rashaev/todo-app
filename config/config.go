@@ -9,6 +9,7 @@ import (
 type Config struct {
 	ListenAddress string `envconfig:"TODO_LISTEN_ADDRESS" default:":8000"`
 	Database      DBConfig
+	Logging       LogConfig
 }
 
 type DBConfig struct {
@@ -17,6 +18,10 @@ type DBConfig struct {
 	Username string `envconfig:"TODO_DB_USERNAME" required:"true"`
 	Password string `envconfig:"TODO_DB_PASSWORD" required:"true"`
 	DBName   string `envconfig:"TODO_DB_DBNAME" required:"true"`
+}
+
+type LogConfig struct {
+	Level string `envconfig:"TODO_LOG_LEVEL" default:":info"`
 }
 
 func Load() (*Config, error) {
