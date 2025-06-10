@@ -14,6 +14,7 @@ import (
 	"github.com/rashaev/todo-app/internal/handler"
 	"github.com/rashaev/todo-app/internal/repository/database"
 	"github.com/rashaev/todo-app/internal/usecase"
+	"github.com/rashaev/todo-app/pkg/logger"
 	"github.com/rashaev/todo-app/pkg/postgres"
 )
 
@@ -24,13 +25,16 @@ func main() {
 		log.Fatalf("Error loading config: %v\n", err)
 	}
 
+	// Init logger
+	logger := logger.NewSlogLogger(cfg.Logging.Level)
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer stop()
 
 	// Init DB
 	db, err := postgres.New(cfg.Database.Host, cfg.Database.Port, cfg.Database.Username, cfg.Database.Password, cfg.Database.DBName)
 	if err != nil {
-		log.Fatalf("unable to create db connection: %v\n", err)
+		logger.Error("unable to create db connection", "error", err)
 	}
 	defer db.Close()
 
@@ -41,7 +45,7 @@ func main() {
 	todoUseCase := usecase.NewTodoUseCase(todoRepo)
 
 	// Init handlers
-	todoHandlers := handler.NewTodoHandlers(todoUseCase)
+	todoHandlers := handler.NewTodoHandlers(todoUseCase, logger)
 
 	router := mux.NewRouter()
 
@@ -61,23 +65,23 @@ func main() {
 
 	// Run server in goroutine
 	go func() {
-		log.Printf("Server is running on %s\n", cfg.ListenAddress)
+		logger.Info("Server is running", "address", cfg.ListenAddress)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("ListenAndServe error: %v", err)
+			logger.Error("ListenAndServe error", "error", err)
 		}
 	}()
 
 	// Waiting for SIGTERM or SIGKILL signals
 	<-ctx.Done()
-	log.Println("Shutting down server...")
+	logger.Info("Shutting down server...")
 
 	// Graceful shutdown
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Printf("Server forced to shutdown: %v", err)
+		logger.Info("Server forced to shutdown", "error", err)
 	}
 
-	log.Println("Server exiting")
+	logger.Info("Server exiting")
 }
