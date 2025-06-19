@@ -44,3 +44,7 @@ func (uc *todoUseCase) UpdateTodo(ctx context.Context, todo *entity.Todo) error 
 func (uc *todoUseCase) DeleteTodo(ctx context.Context, id int64) error {
 	return uc.todoRepo.Delete(ctx, id)
 }
+
+func (uc *todoUseCase) MarkTodoDone(ctx context.Context, id int64) error {
+	return uc.todoRepo.MarkDone(ctx, id)
+}

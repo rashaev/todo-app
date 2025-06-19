@@ -124,3 +124,23 @@ func (h *TodoHandlers) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	h.logger.Info("DeleteTodo", "path", r.URL.Path, "http_method", r.Method, "proto", r.Proto, "remote_addr", r.RemoteAddr, "todo_id", id)
 }
+
+func (h *TodoHandlers) MarkTodoDone(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		h.logger.Error("Unable to parse todo id", "error", err)
+		return
+	}
+
+	err = h.todoUseCase.MarkTodoDone(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		h.logger.Error("Unable to mark todo done", "error", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	h.logger.Info("MarkTodoDone", "path", r.URL.Path, "http_method", r.Method, "proto", r.Proto, "remote_addr", r.RemoteAddr, "todo_id", id)
+}
