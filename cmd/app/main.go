@@ -54,6 +54,7 @@ func main() {
 	router.HandleFunc("/todos/{id}", todoHandlers.GetTodoByID).Methods("GET")
 	router.HandleFunc("/todos/{id}", todoHandlers.UpdateTodo).Methods("PUT")
 	router.HandleFunc("/todos/{id}", todoHandlers.DeleteTodo).Methods("DELETE")
+	router.HandleFunc("/todos/done/{id}", todoHandlers.MarkTodoDone).Methods("PUT")
 
 	srv := &http.Server{
 		Addr:    cfg.ListenAddress,

@@ -12,4 +12,5 @@ type TodoUseCase interface {
 	GetTodoByID(ctx context.Context, id int64) (entity.Todo, error)
 	UpdateTodo(ctx context.Context, todo *entity.Todo) error
 	DeleteTodo(ctx context.Context, id int64) error
+	MarkTodoDone(ctx context.Context, id int64) error
 }

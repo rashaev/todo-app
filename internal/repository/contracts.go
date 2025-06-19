@@ -12,4 +12,5 @@ type TodoRepository interface {
 	GetByID(ctx context.Context, id int64) (entity.Todo, error)
 	Update(ctx context.Context, todo *entity.Todo) error
 	Delete(ctx context.Context, id int64) error
+	MarkDone(ctx context.Context, id int64) error
 }

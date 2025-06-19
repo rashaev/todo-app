@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/rashaev/todo-app/internal/entity"
 	"github.com/rashaev/todo-app/internal/repository"
@@ -75,15 +76,13 @@ func (r *todoPostgresRepository) GetByID(ctx context.Context, id int64) (entity.
 }
 
 func (r *todoPostgresRepository) Update(ctx context.Context, todo *entity.Todo) error {
-	query := `UPDATE todos SET title=$1, description=$2, completed=$3, updated_at=$4 
-	          WHERE id=$5`
+	query := `UPDATE todos SET title=$1, description=$2, updated_at=$3 WHERE id=$4`
 	_, err := r.db.ExecContext(
 		ctx,
 		query,
 		todo.Title,
 		todo.Description,
-		todo.Completed,
-		todo.UpdatedAt,
+		time.Now(),
 		todo.ID,
 	)
 	return err
@@ -91,6 +90,13 @@ func (r *todoPostgresRepository) Update(ctx context.Context, todo *entity.Todo) 
 
 func (r *todoPostgresRepository) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM todos WHERE id=$1`
+	_, err := r.db.ExecContext(ctx, query, id)
+	return err
+}
+
+func (r *todoPostgresRepository) MarkDone(ctx context.Context, id int64) error {
+	query := `UPDATE todos SET completed=true WHERE id=$1`
+
 	_, err := r.db.ExecContext(ctx, query, id)
 	return err
 }
